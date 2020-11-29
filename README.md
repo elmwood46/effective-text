@@ -29,17 +29,18 @@ and draw_char_eff (to animate the colours).
 oPrinter is controlled by changing its "state" variable
 to recognized strings. See oTextbox for example. 
 
-EFFECT TAGS
+EFFECT TAGS:
 Effects are incuded inline like this: "my text <c:red>this is red</c>!"
 Similar to HTML tags
-     COLOUR: 
+
+      COLOUR:
            <c:ColourName> where ColourName is a gml colour code
            <c:0x000000>   where you put a 6 digit b/g/r hex string
 
-		 WAVE:
-		      <w>     makes text wave with default amplitude and frequency
-		      <w:x>   wave & changes the amplitude
-			  <w:x:y> wave & sets the amplitude = x and frequency = y
+      WAVE:
+	   <w>     makes text wave with default amplitude and frequency
+	   <w:x>   wave & changes the amplitude
+	   <w:x:y> wave & sets the amplitude = x and frequency = y
 
       TWITCH:
             <t>     makes text twitch every so often
