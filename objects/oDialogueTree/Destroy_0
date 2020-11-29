@@ -1,0 +1,6 @@
+/// @description cleanup
+
+if (ds_exists(tree, ds_type_map))
+	ds_map_destroy(tree);
+instance_destroy(textbox);
+instance_destroy(choicebox);
