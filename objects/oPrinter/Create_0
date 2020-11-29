@@ -1,0 +1,67 @@
+/// @description init
+
+/*
+ The whole purpose of this object is to print a chunk of text with a fixed
+ width and line separation. The text is printed typewriter-style at a 
+ modifiable speed.
+*/
+
+message = "The quick <c:orange>brown</c> fox <w:15>jumped</w> over the lazy dog.";
+
+// GMS2 inbuilt x and y variables define the top left corner
+width = 300;                                // this printer's width
+height = font_get_height(DEFAULT_FONT) * 4; // this printer's height - default 4 lines
+
+// controller flags
+userCanSkip     = true;    // let the user skip the message
+userCanClose    = true;    // allow button press to change the state from "finished" to "idle"
+indicateColour  = c_white; // colour of blinking indicator to show text has finished
+autoAdvance     = true;    // when set false, user must press input to advance lines
+autoAdvanceTime = 0;       // time after which lines automatically advance
+advanceAllLines = false;   /* when set true, all lines in the box advance, 
+                              not just the bottom one 
+							  (entire textbox is wiped and re-written) */
+//text vars
+font = DEFAULT_FONT;   // holds the default font for this printer
+colour = c_black;      // default colour for text printed by this printer
+effmap = -1;           // effect map for this printer
+textSound = -1;        // text typing sound of this printer
+
+// duration in frames of sliding animation 
+// (text slides upwards when exceeding bottom of box)
+animDuration = 10; 
+
+// typing vars
+typingstate = "setup";       // state machine for typewriter effect
+textspeed = 0.5;             // how much the text pointer advances per frame
+linelen = 0;                 // holds length of current line
+currentline = 0;             // holds the current line
+typingcutoff = 1;            // holds the cutoff
+effTimer = 0;                // for animating the effects; e.g. with colour change or wave
+firstLineIdx = 1;            /* holds the index, w.r.t. the full message, 
+                                of the first chara in first visible line, */
+lineList = -1;               // ds list of strings
+numberoflines = -1;          // max number of lines which fit in text box (minimum zero)
+textSep = -1;                // seperation between lines of text
+state = "idle";              // for this object's state machine
+timer = 0;                   // general timer 
+
+///@function draw_efftext
+///@param {float} x
+///@param {float} y
+///@description To be used specifically with oPrinter to neaten up the drawGUI event.
+function draw_efftext(xx, yy) {
+	for (var i = 1; i <= firstLineIdx; i++) parse_effmap_idx(effmap, i);
+
+	var drawHorz = 0, absIdx = firstLineIdx;
+	for (var line = 0; line < numberoflines && line < ds_list_size(lineList); line++) {
+		// draw everything up to current cutoff (character by character)
+		for (var i = 1; i <= string_length(lineList[| line]); i++) {
+			draw_char_eff(xx + drawHorz, yy + textSep * line, message, absIdx, effTimer, effmap);
+			drawHorz += string_width(string_char_at(message, absIdx));
+			absIdx++;
+		}
+		drawHorz = 0;  // reset horz offset at beginning of line
+	}
+	parse_command(effmap, CMD_CLEAR_EFFECTS);
+}
