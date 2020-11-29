@@ -85,5 +85,5 @@ Try the demo .exe
 	
 The best place to start reading the source code is oDialogueDemo.
 GM uses a custom event-driven scripting language ("GML") which is untyped and near-identical to Javascript syntactically. 
-Each "Object" contains several events that are triggered in different ways.
+Each "Object" contains several events that are triggered in different ways. The Create_0 is the first event run by an object when it is initialized.
 </details>
