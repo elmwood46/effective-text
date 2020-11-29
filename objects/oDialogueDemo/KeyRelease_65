@@ -3,7 +3,7 @@
 // this is where you set default sounds and colours
 
 if (!instance_exists(oDialogueTree)) {
-	event_user(0); // create the dialogue tree - user event allows testing of different trees and not necessary here.
+	event_user(0); // create the dialogue tree
 	var diag = instance_create_layer(0, 0, layer, oDialogueTree);
 	with(diag) {
 		tree = other.tree;
