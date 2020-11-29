@@ -4,8 +4,7 @@ A Text parser/markup language for animated text, supporting different colours, f
 The main purpose of this parser is to easily allow the printing of aesthetic text. 
 For example, the changing of colour of parts of the text, animating, and adding linebreaks and pauses (for when text is printed with a 'Typewriter' animation, character by character.)
 
-The text renderer serves as the basis for more complex systems commonly
-found in games.
+The text renderer serves as the basis for more complex systems commonly found in games.
 In this repo, there's some example stuff which demonstrates
 a dialogue tree, similar to old DS games. You can make choices to
 navigate the text, and display an animated "speaker" portrait which
