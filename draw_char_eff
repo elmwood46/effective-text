@@ -1,0 +1,88 @@
+///@function draw_char_eff
+///@param x             // line x
+///@param y             // line y
+///@param string        // the displayed text
+///@param index         // what index character are we drawing?
+///@param time          // for animation
+///@param effect_map    // for checking against index; for changing effects
+function draw_char_eff(xx, yy, s, i, t, effmap) {
+
+	/**
+	 * This script draws a character at a point in a string, at a certain time
+	 * and location. It applies effects to the drawn character.
+	 *
+	 * This is intended to be used inside a loop over the whole string.
+	 */
+
+	// check for command at passed index
+	parse_effmap_idx(effmap, i);
+
+	// apply effects
+	var text_xoffset = 0, text_yoffset = 0;
+	if (effmap[? EFFCODE.shake]) {
+		text_xoffset = effmap[? EFFCODE.shakeAmp]*random_range(-1, 1);
+		text_yoffset = effmap[? EFFCODE.shakeAmp]*random_range(-1, 1);
+	}
+	if (effmap[? EFFCODE.wave]) {
+		var amp = effmap[? EFFCODE.wavAmp], freq = effmap[? EFFCODE.wavFreq]; 
+		text_yoffset += amp*sin(i + freq*t);
+	}
+	if (effmap[? EFFCODE.twitch]) {
+		randomize();
+		var chance = effmap[? EFFCODE.twitchFreq];
+		if (random(1) < chance) {
+			var range = 2;
+			text_xoffset += random_range(-range/2, range/2);
+			text_yoffset += random_range(-range/2, range/2);
+		}
+	}
+
+	// draw the text
+	var c = string_char_at(s, i);
+	draw_text(xx + text_xoffset, yy + text_yoffset, c);
+}
+	
+/// @function draw_text_eff
+/// @param x
+/// @param y
+/// @param string
+/// @description draws some text and parses effect strings.
+function draw_text_eff(xx, yy, s) {
+	var effmap = create_effect_map(s);
+	var str = effmap[? 0];
+
+	var horzOffset = 0;
+	for (var i = 1; i <= string_length(str); i++) {
+		var c = string_char_at(str, i);
+		draw_char_eff(xx + horzOffset, yy, effmap[? 0], i, room_speed*get_timer()/1000000, effmap);
+		horzOffset += string_width(c);
+	}
+	ds_map_destroy(effmap);
+}
+
+/// @function draw_text_eff_ext
+/// @param x
+/// @param y
+/// @param string
+/// @param sep
+/// @param w
+/// @description 
+function draw_text_eff_ext(xx, yy, s, sep, w) {
+	var effmap = create_effect_map(s);
+	var str = effmap[? 0];
+
+	var lineList = parse_eff_lines(str, w, effmap);
+
+	var drawHorz = 0, absIdx = 1;
+	for (var line = 0; line < ds_list_size(lineList); line++) {
+		for (var i = 1; i <= string_length(lineList[| line]); i++) {
+			draw_char_eff(xx + drawHorz, yy + sep * line, str, absIdx, room_speed*get_timer()/1000000, effmap);
+			drawHorz += string_width(string_char_at(str, absIdx));
+			absIdx++;
+		}
+		drawHorz = 0;
+	}
+
+	ds_map_destroy(effmap);
+	ds_list_destroy(lineList);
+}
