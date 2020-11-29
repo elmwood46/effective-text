@@ -1,0 +1,8 @@
+///@function ds_list_concat
+///@param l1
+///@param l2
+///@description Adds l2 to the end of l1
+function ds_list_concat(l1, l2) {
+	for (var i = 0; i < ds_list_size(l2); i++)
+		ds_list_add(l1, l2[| i]);
+}
