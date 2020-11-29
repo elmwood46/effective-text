@@ -1,0 +1,51 @@
+/// @description 
+
+/*
+ * This object utilises oPrinter to draw a sequence of messages
+ * which are progressed by the user, as in an 8-bit RPG.
+*/
+
+#region drawing layers - make sure text is on top of box
+if (!layer_exists("textboxlayer")) {
+	layer_create(-100, "textboxlayer");
+	layer_create(-101, "textboxtextlayer");
+}
+layer_add_instance("textboxlayer", self);
+#endregion
+
+// message list
+messages = ds_list_create();
+ds_list_add(messages, "Hello<br>there!<p> <br>My name is<p>:<br><w><c:red>J<c:aqua>o<c:orange>h<c:green>n<c:fuchsia><p> Doe</w>.");
+ds_list_add(messages, "How are you doing on this..<p>. <t>auspicious </t>day?");
+currentMessage = 0;
+
+// state machine
+state = "idle"; 
+
+//drawing vars 
+bgcolour = c_blue;
+bordercolour = c_white;
+padding = 4;
+font = fSmall;
+textcolour = c_white;
+width = 150; // display_get_gui_width() - padding * 2; 
+height = font_get_height(font) * 3 + 17 + padding * 2;
+x = display_get_gui_width()/2 - width/2; 
+y = display_get_gui_height() - height - padding;
+
+// text printer vars
+printer = instance_create_layer(0, 0, layer, oPrinter);
+layer_add_instance("textboxtextlayer", printer);
+printer.width = width - padding * 4; 
+printer.height = height - padding * 4; 
+printer.font = font; 
+printer.colour = textcolour; 
+printer.x = x + padding * 2;
+printer.y = y + padding * 2;
+
+// portrait vars
+printerBaseWidth = printer.width;
+printerBaseLeft  = printer.x;
+currentPortrait = -1;
+portfps = 6;
+portTimer = 0;
