@@ -1,7 +1,7 @@
 # effective-text
 A Text parser/markup language for animated text, supporting different colours, fonts, and sounds, written for use with GMStudio.
 
-Try the demo executable found in fullParserv2.zip
+Try the demo executable found in fullParserv2.zip (Windows Only!)
 
 The source code contains references to certain images, fonts and sounds, none of which have been included in this repo.
 
