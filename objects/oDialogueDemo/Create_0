@@ -1,0 +1,36 @@
+/// @description initialize variable
+display_set_gui_size(display_get_gui_width()/2,display_get_gui_height()/2);
+window_set_fullscreen(true);
+tree = -1;
+
+globalvar portraitTree;
+portraitTree = json_decode(@'
+{
+	"alice" : {
+		"def" : "sDemoPort1",
+		"angry" : "sDemoPort1Angry"
+	},
+	
+	"bob" : {
+		"def" : "sDemoPort2"
+	}
+}');
+
+/** 
+The point of portraits is to draw a face with moving lips while the text prints, so that it looks like someone's speaking.
+
+Because of the way JSON works, the above portrait tree translates into 3 ds_trees (which is why
+there are always at least 3 ds_trees in the demo).
+
+The portrait tree is a global tree of "actors", and their different "emotions".
+Each actor is a subtree which contains key-value pairs of emotes with sprite resources (multi-frame images).
+Every actor should have the "def" emote. Then you can add whatever you want just
+by adding it to the portraitTree, like above. Then when you write the dialogue, you can
+change the portrait using these tags:
+<i:alice> -- sets speaker to alice
+<e:def>   -- sets emotion to default
+<e:angry> -- sets emotion to angry
+
+Note - that using "angry" for Bob will result in an error since he doesn't have that 
+key/value pair in his tree. And using <e> without a portrait set will result in an error.
+*/
