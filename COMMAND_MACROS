@@ -1,0 +1,29 @@
+// TEXT PARSER MACROS
+
+// "dynamic" commands (fire whilst drawing)
+#macro CMD_CHANGE_COLOUR "c"           
+#macro CMD_WAVE          "w"
+#macro CMD_TWITCH        "t"
+#macro CMD_SHAKE         "s"
+#macro CMD_CHANGE_FONT   "f"
+#macro CMD_CHANGE_SOUND  "sx" // <sx:resourceName>
+#macro CMD_SET_SPEAKER   "i"
+#macro CMD_CHANGE_EMOTE  "e"
+#macro CMD_DISABLE_SKIP  "/skip"
+#macro CMD_AUTO_CONTINUE "auto"
+#macro CMD_CLEAR_EFFECTS "/fx"
+#macro CMD_CLEAR_WAVE    "/"+CMD_WAVE
+#macro CMD_CLEAR_TWITCH  "/"+CMD_TWITCH
+#macro CMD_CLEAR_SHAKE   "/"+CMD_SHAKE
+#macro CMD_CLEAR_COLOUR  "/"+CMD_CHANGE_COLOUR
+#macro CMD_CLEAR_SOUND   "/"+CMD_CHANGE_SOUND
+#macro CMD_CLEAR_FONT    "/"+CMD_CHANGE_FONT
+
+// "preprocessed" commands (processed in in parse_eff_lines and create_effect_map)
+//  only done once.
+#macro CMD_PAUSE         "p"            
+#macro CMD_QUOTE         "q"
+#macro CMD_APOSTROPHE    "`"
+#macro CMD_NEWLINE       "br"
+#macro CMD_GREATER       "gt"
+#macro CMD_LESSER        "lt"
