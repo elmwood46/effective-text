@@ -4,6 +4,8 @@ A Text parser/markup language for animated text, supporting different colours, f
 The main purpose of this parser is to easily allow the printing of aesthetic text. 
 For example, the changing of colour of parts of the text, animating, and adding linebreaks and pauses (for when text is printed with a 'Typewriter' animation, character by character.)
 
+<details>
+	<summary>More Info</summary>
 The text renderer serves as the basis for more complex systems commonly found in games.
 In this repo, there's some example stuff which demonstrates
 a dialogue tree, similar to old DS games. You can make choices to
@@ -27,8 +29,10 @@ and draw_char_eff (to animate the colours).
 
 oPrinter is controlled by changing its "state" variable
 to recognized strings. See oTextbox for example. 
+</details>
 
-EFFECT TAGS:
+<details>
+	<summary>Effect tags</summary>
 Effects are incuded inline like this: "my text <c:red>this is red</c>!"
 Similar to HTML tags
 
@@ -74,3 +78,11 @@ Similar to HTML tags
             </w>    stops wave and resets wave vars
             </s>    same but for shake
             </t>    same but for twitch
+</summary>
+
+<details><summary>Where to Start></summary>
+	Try the demo .exe
+	The best place to start reading the source code is oDialogueDemo.
+	GM uses a custom event-driven scripting language ("GML") which is untyped and near-identical to Javascript syntactically. 
+	Each "Object" contains several events that are triggered in different ways.
+	</details>
