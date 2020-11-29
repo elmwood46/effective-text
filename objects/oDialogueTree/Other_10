@@ -1,0 +1,52 @@
+/// @description setup textbox dimensions
+// user event 0 - creates the textbox
+
+var subtree = tree[? "start"]; 
+
+// set choicebox colour and dimensions
+choicebox = instance_create_layer(0, 0, layer, oChoicebox);
+with (choicebox) {
+	ds_list_clear(choices);
+	bgcolour = other.bgcolour;
+	bordercolour = other.bordercolour;
+	padding = other.padding;
+	font = other.font;
+	textcolour = other.textcolour;
+	highlightColour = c_fuchsia;
+	width = other.width;
+	height = other.height;
+	x = other.tbx
+	y = other.tby
+}
+
+// set textbox colour and dimensions
+textbox = instance_create_layer(0, 0, layer, oTextbox);
+with (textbox) {
+	ds_list_clear(messages);
+	var list = subtree[? "messages"];
+	ds_list_copy(messages, list);
+	bgcolour = other.bgcolour;
+	bordercolour = other.bordercolour;
+	padding = other.padding;
+	font = other.font;
+	textcolour = other.textcolour;
+	width = other.width;
+	height = other.height;
+	x = other.tbx
+	y = other.tby
+	state = "showText";
+
+	// text printer vars
+	printer = instance_create_layer(0, 0, "textboxtextlayer", oPrinter);
+	printer.width = width - padding * 4; 
+	printer.height = height - padding * 4; 
+	printer.font = font; 
+	printer.colour = textcolour; 
+	printer.indicateColour = bordercolour;
+	printer.x = x + padding * 2;
+	printer.y = y + padding * 2;
+	printer.textSound = other.textsound;
+	
+	printerBaseWidth = printer.width;
+	printerBaseLeft  = printer.x;
+}
