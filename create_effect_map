@@ -1,0 +1,103 @@
+///@description create_effect_map
+///@param string
+function create_effect_map(str) {
+
+	/*
+	 * Returns a map with KEYS = string indices and VALUES = command strings. 
+	 * When the text is drawn character by character, upon reaching index X 
+	 * the command at that index will be applied to the drawn text. E.g. colour change.
+	 * 
+	 * Key = 0 contains the tag-delimited string (what the player sees printed out)
+	 * Key 0 is safe because GameMaker indexes strings starting from 1, which is horrible >:(
+	 *
+	 * NB that since JSON maps are used to insert dialogue, the grave symbol ` is replaced
+	 * by the apostrophe ' when text is parsed (to allow the insertion of apostrophe) and
+	 * <CMD_QUOTE> is replaced by quotation marks.
+	*/
+					  
+	// get args
+	var delimitedstr = "";
+	var map = ds_map_create();
+
+	// create places in the map which let the parser control text effects
+	// these all have negative numbers as keys (so they are never overwritten by parsed keys)
+	ds_map_add(map, EFFCODE.wave, false);
+	ds_map_add(map, EFFCODE.twitch, false);
+	ds_map_add(map, EFFCODE.shake, false);
+	ds_map_add(map, EFFCODE.paused, false);
+	ds_map_add(map, EFFCODE.pauseDuration, 0);
+	ds_map_add(map, EFFCODE.pauseCounter, 0);
+	ds_map_add(map, EFFCODE.wavFreq, DEFAULT_WAVE_FREQ);
+	ds_map_add(map, EFFCODE.wavAmp, DEFAULT_WAVE_AMP);
+	ds_map_add(map, EFFCODE.shakeAmp, DEFAULT_SHAKE_AMP);
+	ds_map_add(map, EFFCODE.twitchFreq, DEFAULT_TWITCH_FREQ);
+	ds_map_add(map, EFFCODE.defaultFont, DEFAULT_FONT);
+	ds_map_add(map, EFFCODE.defaultColour, DEFAULT_COLOUR);
+	ds_map_add(map, EFFCODE.textSound, DEFAULT_SOUND);
+	ds_map_add(map, EFFCODE.speaker, DEFAULT_SPEAKER);
+	ds_map_add(map, EFFCODE.currentEmote, DEFAULT_EMOTE);
+	ds_map_add(map, EFFCODE.canSkip, true);
+	ds_map_add(map, EFFCODE.noButtonClose, false);
+	ds_map_add(map, EFFCODE.autoContinue, false);
+
+	// function body
+	for (var ipt = 1, opt = 1; ipt <= string_length(str); ipt++) {
+		var current = string_char_at(str, ipt);
+	
+		if (current == "<") { // read the effect command and store in ds_map
+			var command = "", nextChar = string_char_at(str, ++ipt);
+			while (nextChar != ">") {
+				command	+= nextChar;
+				ipt++;
+				if (ipt > string_length(str)) throw_parser_error("forgot to close effect tag.");
+				if (nextChar == "<") throw_parser_error("effects do not nest.");
+				nextChar = string_char_at(str, ipt); 
+			}
+		
+			// check for replacement chars or SPEAKER command
+			var addToMap = true;
+			if (command == CMD_GREATER || command == CMD_LESSER || command == CMD_QUOTE) {
+			switch(command) {
+				case CMD_QUOTE:   delimitedstr += "\""; break;
+				case CMD_GREATER: delimitedstr += ">";  break;
+				case CMD_LESSER:  delimitedstr += "<";  break;
+			}
+				addToMap = false;
+				opt++;
+			} else {
+				var isSpeaker = string_split(command, ":");
+				if (isSpeaker[0] == CMD_SET_SPEAKER) {
+					parse_command(map, command);
+					addToMap = false;
+				}
+			}
+
+			if (addToMap) {
+				/* check to see if there are adjacent effects, 
+			   and make them occur on the same index if there are */
+				if (ds_map_exists(map, opt)) {
+					var existingValue = map[? opt]; 
+					// check for list at value
+					if (is_real(existingValue) && ds_exists(existingValue, ds_type_list)) { 
+						ds_list_add(existingValue, command);
+					} else {                      // create a list of two commands
+						var list = ds_list_create();
+						ds_list_add(list, existingValue, command);
+						ds_map_delete(map, opt);
+						ds_map_add_list(map, opt, list);
+					}
+				} else { // nothing there - add command string by itself to ds_map
+					ds_map_replace(map, opt, command);
+				}
+			}
+		} else {         // if current char is not "<"
+			if (current == CMD_APOSTROPHE) current = "'"; // switch out grave for apostrophe
+			delimitedstr += current;
+			opt ++; 
+		}
+	}
+	
+	// finally return map
+	ds_map_add(map, 0, delimitedstr);
+	return map;
+}
