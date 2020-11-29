@@ -34,8 +34,8 @@ Effects are incuded inline like this: "my text <c:red>this is red</c>!"
 Similar to HTML tags
 
       COLOUR:
-           <c:ColourName> where ColourName is a gml colour code
-           <c:0x000000>   where you put a 6 digit b/g/r hex string
+            <c:ColourName> where ColourName is a gml colour code
+            <c:0x000000>   where you put a 6 digit b/g/r hex string
 
       WAVE:
 	        <w>     makes text wave with default amplitude and frequency
