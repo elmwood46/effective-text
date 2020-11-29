@@ -16,7 +16,7 @@ The object oPrinter prints a text message with applied "effects".
 The message is automatically linebroken into an arbitrary box and 
 can be placed anywhere.
 The message is printed character by character, typewriter-style.
-Furthermore, multiple lines don't run outside the box.
+Furthermore, multiple lines don't run outside the box - instead, the text scrolls upwards.
 Pauses only work with the oPrinter object (although if included
 outside it, are simply ignored.)
 
