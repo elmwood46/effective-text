@@ -1,0 +1,46 @@
+/// @description navigate tree
+// begin step event
+
+if is_finished() exit;
+
+// open choice box
+if (textbox.state == "finished" && choicebox.state == "idle") {
+	var subtree = tree[? state];
+	var choiceList = subtree[? "choices"];
+	if (is_undefined(choiceList)) { // no more choices; finish dialogue
+		state = -1;
+		exit;
+	}
+	with (choicebox) {
+		ds_list_copy(choices, choiceList);
+		state = "setup";	
+	}
+}
+
+// make selection in choice box
+if (choicebox.finalselection >= 0) {
+	var subtree = tree[? state];
+	var choiceStates = subtree[? "goto"]; 
+	state = choiceStates[| choicebox.finalselection]; 
+	subtree = tree[? state];
+	var messageList = subtree[? "messages"];
+	
+	if (is_undefined(messageList)) {
+		var choiceList = subtree[? "choices"];
+		if (is_undefined(choiceList)) { // there is no next message or choices; finish dialogue
+			state = -1;
+			exit;
+		} else { // the next box is a choicebox only!
+			choicebox.finalselection = -1;
+			choicebox.state = "idle";
+			exit;
+		}
+	}
+	
+	// there are messages in the next
+	// reset choicebox and show selected messages
+	ds_list_concat(textbox.messages, messageList);
+	textbox.state = "showText";
+	choicebox.finalselection = -1;
+	choicebox.state = "idle";
+}
