@@ -32,7 +32,7 @@ to recognized strings. See oTextbox for example.
 
 <details>
 	<summary>Effect tags</summary>
-Effects are incuded inline like this: "my text <c:red>this is red</c>!"
+Effects are incuded inline like this: "my text <gt>c:red<lt>this is red<gt>/c<lt>!"
 Similar to HTML tags
 
       COLOUR:
