@@ -1,0 +1,21 @@
+///@function string_split
+///@param string
+///@param character
+function string_split(s, c) {
+	var len = string_length(s);
+	var substr = "";
+	for (var i = 1; i <= len; i++) {
+		var curr = string_char_at(s, i);
+		if (curr == c) {
+			var arr = []; 
+			arr[0] = substr;
+			substr = "";
+			while (i++ <= len)
+				substr += string_char_at(s, i);
+			arr[1] = substr;
+			return arr; 
+		}
+		substr += curr;
+	}
+	return [s, ""]; 
+}
