@@ -1,6 +1,10 @@
 # effective-text
 A Text parser/markup language for animated text, supporting different colours, fonts, and sounds, written for use with GMStudio.
 
+Try the demo executable found in fullParserv2.zip
+
+The source code contains references to certain images, fonts and sounds, none of which have been included in this repo.
+
 The main purpose of this parser is to easily allow the printing of aesthetic text. 
 For example, the changing of colour of parts of the text, animating, and adding linebreaks and pauses (for when text is printed with a 'Typewriter' animation, character by character.)
 
@@ -11,6 +15,7 @@ In this repo, there's some example stuff which demonstrates
 a dialogue tree, similar to old DS games. You can make choices to
 navigate the text, and display an animated "speaker" portrait which
 moves its mouth while the text is printing, etc.
+	
 
 The object oPrinter prints a text message with applied "effects".
 The message is automatically linebroken into an arbitrary box and 
@@ -84,6 +89,8 @@ Similar to HTML tags
 Try the demo executable found in fullParserv2.zip
 	
 The best place to start reading the source code is oDialogueDemo.
-GM uses a custom event-driven scripting language ("GML") which is untyped and near-identical to Javascript syntactically. 
+
+GMStudio uses a custom event-driven scripting language ("GML") which is untyped and near-identical to Javascript syntactically. 
+
 Each "Object" contains several events that are triggered in different ways. The Create_0 is the first event run by an object when it is initialized.
 </details>
