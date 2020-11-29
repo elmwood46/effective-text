@@ -81,7 +81,7 @@ Similar to HTML tags
 
 <details>
 	<summary>Where to Start</summary>
-Try the demo .exe
+Try the demo executable found in fullParserv2.zip
 	
 The best place to start reading the source code is oDialogueDemo.
 GM uses a custom event-driven scripting language ("GML") which is untyped and near-identical to Javascript syntactically. 
