@@ -1,0 +1,202 @@
+/// @description draw GUI
+
+if (state == "idle") exit;
+
+// timer for effects (constantly increments so effects are continuous)
+effTimer ++;
+
+// user contol buttons
+var skip_pressed = keyboard_check_pressed(ord("X"));
+var continue_pressed = keyboard_check_pressed(ord("Z"));
+
+// for debugging - draw bounding box
+/*
+draw_set_colour(c_red);
+draw_rectangle(x, y, x+width, y+height, false);
+draw_set_colour(c_black);
+draw_rectangle(x, y, x+width, y+height, true);
+*/
+
+// set default font and colour
+draw_set_font(font);
+draw_set_colour(colour);
+
+#region draw state
+if (state == "draw") { // typewrite the text
+	if (typingstate == "setup") event_user(0);
+	
+	if (typingstate == "idle") {
+		timer = 0;
+		linelen = string_length(lineList[| currentline]); 
+		typingstate = "typing"; 
+	} 
+	
+	if (typingstate == "typing") {
+		// update cutoff for current line
+		typingcutoff = min(floor(timer * textspeed), linelen);
+
+		// parse effects for deleted lines (after anim has moved past them
+		// firstLineIdx is 1 when no lines have been deleted, 2 after one line has been deleted, etc
+		for (var i = 1; i <= firstLineIdx; i++) parse_effmap_idx(effmap, i);
+		
+		// draw everything up to current cutoff (character by character)
+		var drawHorz = 0, absIdx = firstLineIdx;
+		for (var line = 0; line <= currentline; line++) {
+			var limit = (line == currentline) ? typingcutoff : string_length(lineList[| line]);
+			for (var i = 1; i <= limit; i++) {
+				draw_char_eff(x + drawHorz, y + textSep * line, message, absIdx, effTimer, effmap);
+				if (effmap[? EFFCODE.paused]) {
+					typingstate = "paused";
+					exit;
+				}
+				drawHorz += string_width(string_char_at(message, absIdx));
+				absIdx++;
+			}
+			drawHorz = 0;  // reset horz offset at beginning of line
+		}
+		parse_command(effmap, CMD_CLEAR_EFFECTS);
+		
+		// play text sound
+		var snd = effmap[? EFFCODE.textSound];
+		if ((snd != -1) && effTimer % 5 == 0 && !audio_is_playing(snd)) {
+			audio_play_sound(snd, 1, false);
+		}
+
+		// check for next line or switch state
+		if (typingcutoff == linelen) { 
+			timer = 0;
+			currentline ++; 
+			if (currentline == numberoflines) typingstate = "finished typing";
+			else linelen = string_length(lineList[| currentline]);
+		}
+	}
+	
+	// state - paused
+	if (typingstate == "paused") {
+		// draw everything up to current cutoff (character by character)
+		for (var i = 1; i <= firstLineIdx; i++) parse_effmap_idx(effmap, i);
+		var drawHorz = 0, absIdx = firstLineIdx;
+		for (var line = 0; line <= currentline; line++) {
+			var limit = ((line == currentline) ? typingcutoff : string_length(lineList[| line]));
+			for (var i = 1; i <= limit; i++) {
+				draw_char_eff(x + drawHorz, y + textSep * line, message, absIdx, effTimer, effmap);
+				drawHorz += string_width(string_char_at(message, absIdx));
+				absIdx++;
+			}
+			drawHorz = 0;  // reset horz offset at beginning of line
+		}
+		parse_command(effmap, CMD_CLEAR_EFFECTS);
+		
+		// check for pause end
+		if (effmap[? EFFCODE.pauseCounter] >= effmap[? EFFCODE.pauseDuration]) {
+				effmap[? EFFCODE.paused] = false;
+				typingstate = "typing";
+			}
+		effmap[? EFFCODE.pauseCounter] ++;
+	}
+	
+	// skip
+	if (effmap[? EFFCODE.canSkip] && skip_pressed) {
+		remove_pauses(effmap);
+		currentline = numberoflines;
+		typingstate = "finished typing";
+	}
+	
+	// finish typing OR increment timer
+	if (typingstate == "finished typing") {	
+		effmap[? EFFCODE.pauseDuration] = 0;
+		effmap[? EFFCODE.pauseCounter] = 0;
+		effmap[? EFFCODE.paused] = false;
+		timer = 0;
+		
+		// switch state
+		if (numberoflines == ds_list_size(lineList)) {
+			typingstate = "setup"; // end of message - reset typing state!
+			state = "finished";    // goto end state
+		}
+		else { // not end of message yet - move down a line
+			typingstate = "idle";
+			state = "wait";
+		}
+	}
+		
+	if (typingstate != "paused") timer++; 
+}
+#endregion
+
+#region wait state - wait for user input to go to next line
+else if (state == "wait") {
+	draw_efftext(x, y); //draw text with effects
+	
+	if (continue_pressed) { // user continues
+		timer = 0;
+		state = "animate";
+	}
+	
+	if (autoAdvance && timer >= autoAdvanceTime) { // automatic advance
+		timer = 0;
+		state = "animate"; 
+	}
+	
+	timer++;
+}
+#endregion
+
+#region animate state - slide
+else if (state == "animate") {
+	// apply shader to clip text inside rect
+	shader_set(shd_clip_rect);
+	var u_bounds = shader_get_uniform(shd_clip_rect, "u_bounds");
+	shader_set_uniform_f(u_bounds, x - 999, y, x + 999, y + height); // ignore width; only clip height
+		
+	// draw the lines with effects
+	var slideDistance = advanceAllLines ? numberoflines : 1; 
+	var yoffset = -textSep * slideDistance * timer/animDuration;
+	draw_efftext(x, y + yoffset);
+		
+	// reset shader
+	shader_reset();
+	
+	timer++; 
+
+	if (timer == animDuration) { // animation finished
+		if (advanceAllLines) {   // advance all the lines by deleting the top lines from lineList
+			repeat(numberoflines) {
+				firstLineIdx += string_length(lineList[| 0]);
+				ds_list_delete(lineList, 0);
+			}
+			numberoflines = min(numberoflines, ds_list_size(lineList));
+			currentline = 0;
+		} else {                 // else - advance only one line
+			firstLineIdx += string_length(lineList[| 0]);
+			ds_list_delete(lineList, 0);
+			currentline = numberoflines - 1;
+		}
+		state = "draw";
+	}
+}
+#endregion
+
+#region finish state - close the message
+else if (state == "finished") {
+	draw_efftext(x, y); // draw finished text with effects
+	
+	var userClose = !effmap[? EFFCODE.noButtonClose];
+	var autoContinue = effmap[? EFFCODE.autoContinue];
+	
+	if (autoContinue || (userClose && continue_pressed)) {
+		state = "idle"; 
+		exit;
+	}
+	
+	if (userCanClose && timer % 45 < 23) {  // blinking cursor @ end
+		var rectSize = 4;
+		var xx = x + width - rectSize;
+		var yy = y + height - rectSize;
+		draw_set_colour(indicateColour);
+		draw_rectangle(xx, yy, xx + rectSize, yy+rectSize, false);
+	}
+	
+	timer++; 
+}
+#endregion
