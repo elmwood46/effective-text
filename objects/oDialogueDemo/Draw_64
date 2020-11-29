@@ -1,0 +1,26 @@
+/// @description 
+// draw GUI
+draw_set_colour(c_black);
+draw_set_font(fSmall);
+var xx = 10;
+var yy = 32;
+
+// draw demo text
+if (!instance_exists(oDialogueTree)) {
+	draw_text_eff(xx, yy-22, "<c:0><w><f:fItalic>Press</f> <c:red>A</c> to start. <c:green>B</c> to end demo.");
+	draw_text_eff_ext(xx, yy+64, "<t>Instructions:<br>Press <c:orange>Z</c> to progress text and <c:blue>X</c> to skip.<br>Use arrow keys to select different choices and <c:orange>Z</c> to confirm choice.", 16, 300);
+} else if (oDialogueTree.is_finished())
+	with(oDialogueTree) instance_destroy();
+
+// count lists and maps
+var n =0;
+for (var i = 0 ; i < 100; i++) {
+	if (ds_exists(i, ds_type_list)) {n++;}
+}
+draw_text(xx, yy, "ds_list count: "+string(n));
+
+var n =0;
+for (var i = 0 ; i < 100; i++) {
+	if ds_exists(i, ds_type_map) {n++;}
+}
+draw_text(xx, yy+16, "ds_map count: "+string(n));
