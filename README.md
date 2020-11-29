@@ -38,9 +38,9 @@ Similar to HTML tags
            <c:0x000000>   where you put a 6 digit b/g/r hex string
 
       WAVE:
-	   <w>     makes text wave with default amplitude and frequency
-	   <w:x>   wave & changes the amplitude
-	   <w:x:y> wave & sets the amplitude = x and frequency = y
+	          <w>     makes text wave with default amplitude and frequency
+	          <w:x>   wave & changes the amplitude
+	          <w:x:y> wave & sets the amplitude = x and frequency = y
 
       TWITCH:
             <t>     makes text twitch every so often
