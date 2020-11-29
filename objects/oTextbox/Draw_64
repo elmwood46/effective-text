@@ -1,0 +1,83 @@
+/// @description draw GUI
+
+if (state == "idle") exit; 
+
+// draw textbox
+if (state == "showText") {
+	if (currentMessage <= ds_list_size(messages)) {
+		// draw textbox
+		draw_set_colour(bgcolour);
+		draw_rectangle(x, y, x + width, y + height, false);
+		draw_set_colour(bordercolour);
+		draw_rectangle(x + padding - 1,
+			y + padding - 1, 
+			x + width - padding + 1, 
+			y + height - padding + 1, 
+			false);
+		draw_set_colour(bgcolour);
+		draw_rectangle(x + padding,
+			y + padding, 
+			x + width - padding, 
+			y + height - padding, 
+			false);
+	}
+	
+	// check for emote changes & draw portrait
+	if (currentPortrait != -1) {
+		var subtree = portraitTree[? printer.effmap[? EFFCODE.speaker]];
+		var emote   = subtree[? printer.effmap[? EFFCODE.currentEmote]];
+		currentPortrait = asset_get_index(emote);
+		var pFrames = sprite_get_number(currentPortrait);
+		var pwidth = sprite_get_width(currentPortrait);
+		var frame = (printer.typingstate != "typing") ? 0 : floor(portTimer);
+		draw_sprite(currentPortrait, frame, x + padding*2, y + padding*2);
+		portTimer += portfps/room_speed;
+		if (portTimer >= pFrames) portTimer -= pFrames;
+	}
+
+	// print message
+	if (currentMessage <= ds_list_size(messages) && printer.state == "idle") {
+		if (currentMessage < ds_list_size(messages)) {
+			printer.message = messages[| currentMessage];
+			portTimer = 0;
+			
+			// set printer width and height before printing starts
+			var effmap = create_effect_map(printer.message);
+			if (effmap[? EFFCODE.speaker] != -1) { // we have a portrait!
+				var subtree = portraitTree[? effmap[? EFFCODE.speaker]];
+				var portrait = subtree[? effmap[? EFFCODE.currentEmote]];
+				portrait = asset_get_index(portrait);
+				var pwidth = sprite_get_width(portrait);
+				printer.width = printerBaseWidth - (pwidth + padding);
+				printer.x = printerBaseLeft + pwidth + padding;
+				currentPortrait = portrait;
+			} else if (currentPortrait != -1) { // no portrait & reset printer dimensions
+				printer.width = printerBaseWidth;
+				printer.x = printerBaseLeft;
+				currentPortrait = -1;
+			}
+			ds_map_destroy(effmap);
+			
+			printer.state = "draw";
+		}
+		currentMessage++; 
+	}
+	
+	if (currentMessage > ds_list_size(messages)) {
+		state = "finished";
+		printer.width = printerBaseWidth;
+		printer.x = printerBaseLeft; 
+		currentPortrait = -1;
+		portTimer = 0;
+		currentMessage --;
+	}
+}
+
+// debug - repeat message printing from beginning
+if (state == "finished") {
+	
+	/*if (keyboard_check_pressed(ord("A"))) {
+		state = "showText";
+		currentMessage = 0; 
+	}*/
+}
