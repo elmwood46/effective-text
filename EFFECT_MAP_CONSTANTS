@@ -1,0 +1,23 @@
+/// EFFECT MAP CONSTANTS
+// constains the defaults for the effect map
+
+enum EFFCODE {
+	wave = -100, twitch, shake,
+	wavFreq, wavAmp, shakeAmp,twitchFreq, 
+	paused, pauseDuration,pauseCounter, 
+	defaultFont, defaultColour,
+	textSound, speaker, currentEmote,
+	canSkip, noButtonClose, autoContinue
+}
+
+#macro DEFAULT_WAVE_FREQ        0.125
+#macro DEFAULT_WAVE_AMP         1
+#macro DEFAULT_SHAKE_AMP        0.6
+#macro DEFAULT_TWITCH_FREQ      0.0005
+#macro DEFAULT_PAUSE_DURATION   20
+#macro DEFAULT_FONT             fDefault
+#macro DEFAULT_COLOUR           c_black
+#macro DEFAULT_SOUND            -1          
+#macro DEFAULT_SPEAKER          -1          
+#macro DEFAULT_EMOTE            "def"  // nb: SPEAKERS are only looked for by the 
+	                                   //  oTextbox object. They're irrelevant to other objects.
