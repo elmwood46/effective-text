@@ -1,0 +1,26 @@
+/// @description set position and size
+// user event 0
+
+// generate ds_map holding effect indexes
+if (ds_exists(effmap, ds_type_map))
+	ds_map_destroy(effmap);
+effmap = create_effect_map(message);
+effmap[? EFFCODE.defaultFont] = font;
+effmap[? EFFCODE.defaultColour] = colour;
+effmap[? EFFCODE.textSound] = textSound;
+effmap[? EFFCODE.canSkip] = userCanSkip;
+effmap[? EFFCODE.noButtonClose] = !userCanClose;
+message = effmap[? 0]; 
+firstLineIdx = 1;
+
+// get line separation 
+textSep = font_get_height(font) + 3;
+
+// parse message into lines 
+if (ds_exists(lineList, ds_type_list)) ds_list_destroy(lineList);
+lineList = parse_eff_lines(message, width, effmap);
+numberoflines = min(height div textSep, ds_list_size(lineList));
+if (numberoflines == 0) exit;
+currentline = 0;
+
+typingstate = "idle";
