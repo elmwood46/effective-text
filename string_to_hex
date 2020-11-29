@@ -1,0 +1,32 @@
+///@function string_to_hex
+///@param string
+function string_to_hex(argument0) {
+	var s = string_lower(argument0);
+	var len = string_length(s);
+	var ret = 0;
+	for (var i = 1; i <= len; i++) {
+		var c = string_char_at(s, i);
+		var fact = 1;
+		repeat (len - i) {fact *= 16;}
+		switch(c) {
+			default: throw_parser_error("Incorrect hexadecimal string."); break;
+			case "0": break; 
+			case "1": ret += fact; break;
+			case "2": ret += fact * 2; break;
+			case "3": ret += fact * 3; break;
+			case "4": ret += fact * 4; break;
+			case "5": ret += fact * 5; break;
+			case "6": ret += fact * 6; break;
+			case "7": ret += fact * 7; break;
+			case "8": ret += fact * 8; break;
+			case "9": ret += fact * 9; break;
+			case "a": ret += fact * 10; break;
+			case "b": ret += fact * 11; break;
+			case "c": ret += fact * 12; break;
+			case "d": ret += fact * 13; break;
+			case "e": ret += fact * 14; break;
+			case "f": ret += fact * 15; break;
+		}
+	}
+	return ret; 
+}
