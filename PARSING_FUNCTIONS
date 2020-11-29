@@ -1,0 +1,407 @@
+///@function parse_effmap_idx
+///@param effmap
+///@param int
+///@description This script check a particular index from the EFFECT MAP for parsing. All the other parsing scripts follow on from this.
+function parse_effmap_idx(effmap, i) {
+	// check for pauses (remove them from map after checking)
+	parse_pauses(effmap, i);
+
+	// check for command at passed index
+	if (ds_map_exists(effmap, i)) {
+		var val = effmap[? i];
+		// check for a list of commands at the index
+		if (is_real(val) && ds_exists(val, ds_type_list)) {
+			for (var j = 0; j < ds_list_size(val); j++) 
+				parse_command(effmap, val[| j]); // execute commands sequentially
+		} else  // no command list: single command 
+			parse_command(effmap, val);
+	
+	}
+
+
+}
+
+///@function parse_command
+///@param effect_map
+///@param {string} command
+///@description handles commands for all DYNAMIC commands
+/// (pre-processed commands are handled in parse_eff_lines)
+/// Nb - Setting a Speaker is pre-processed. Only one speaker can be set. If you try to set
+/// more than one, it'll default to the last one.
+/// However Emotes are not pre-processed, and only change once you reach the position of the emote.
+/// You can't change speaker in the middle of a textbox, but can change between textboxes.
+function parse_command(map, command) {
+	var s = string_split(command, ":");
+
+	switch(s[0]) {
+		#region preprocessed commands - newline, pause, and the dynamic "disable skip" and "enable auto continue"
+		case CMD_NEWLINE:
+			// handled in parse_eff_lines
+			// still needs to be recognized here!
+			// because unrecognized commands throw errors
+		return;
+	
+		case CMD_PAUSE:
+			/* Handled in parse_pauses and
+			   oPrinter drawGUI */
+		return;
+	
+		case CMD_DISABLE_SKIP:
+			map[? EFFCODE.canSkip] = false;
+		return;
+
+		case CMD_AUTO_CONTINUE:
+			map[? EFFCODE.autoContinue] = true;
+		return;
+		#endregion
+	
+	#region set speaker (portrait) and change emote
+		case CMD_SET_SPEAKER:
+			if (s[1] != "") {
+				var speaker = s[1];
+				var subtree = portraitTree[? speaker];
+			
+				if (!is_undefined(subtree)) {
+					var emote = subtree[? DEFAULT_EMOTE];
+					if (!is_undefined(emote)) {
+						map[? EFFCODE.speaker] = speaker;
+						return;
+					} else throw_parser_error("the speaker did not have a default emote!");
+				} else throw_parser_error("specified non existent speaker.")
+			} else throw_parser_error("did not specify speaker.");
+		break;
+	
+		case CMD_CHANGE_EMOTE: 
+			if (s[1] != "") {
+				var subtree = portraitTree[? map[? EFFCODE.speaker]];
+				var emote = subtree[? s[1]];
+				if (!is_undefined(emote)) {
+					var portrait = asset_get_index(emote);
+						if (portrait != -1) {
+							map[? EFFCODE.currentEmote] = s[1];
+							return;
+						} else throw_parser_error("incorrect asset name for emote: "+string(s));
+				} else throw_parser_error("tried to set non existent emote: "+string(s) +" for speaker: "+map[? EFFCODE.speaker]);
+			} else throw_parser_error("did not specify emote: "+string(s));
+		break;
+	#endregion
+	
+	#region font, sound and colour
+		case CMD_CHANGE_SOUND:
+			if (s[1] != "") {
+				var snd = s[1];
+				snd = asset_get_index(snd);
+				if (snd != -1) {
+					map[? EFFCODE.textSound] = snd;
+					return;
+				} else throw_parser_error("tried to set non existent text sound.");
+			}
+		break;
+	
+		case CMD_CLEAR_SOUND:
+			map[? EFFCODE.textSound] = -1;
+		return;
+	
+		case CMD_CHANGE_FONT:	
+			if (s[1] != "") {
+				var fnt = s[1];
+				fnt = asset_get_index(fnt);
+				if (fnt != -1) {
+					draw_set_font(fnt);
+					return;
+				} else throw_parser_error("tried to set non existent text font.");
+			}
+		break;
+	
+		case CMD_CLEAR_FONT:
+			draw_set_font(map[? EFFCODE.defaultFont]);
+		return;
+	
+		case CMD_CHANGE_COLOUR: 
+			draw_set_colour(parse_colour(s[1])); 
+			return;  
+		case CMD_CLEAR_COLOUR: 
+			draw_set_colour(map[? EFFCODE.defaultColour]); 
+			return;
+	#endregion
+	
+	#region parse effects - shake, twitch and wave
+		case CMD_SHAKE: 
+			map[? EFFCODE.shake] = true;
+			if (s[1] != "") {
+				var val = real(s[1]);
+				map[? EFFCODE.shakeAmp] = (val == -1) ? DEFAULT_SHAKE_AMP : val;
+			}
+			return;
+		case CMD_WAVE: 
+			map[? EFFCODE.wave] = true; 
+			if (s[1] != "") {
+				var secondArg = string_split(s[1], ":");
+				var val = real(secondArg[0]);
+				map[? EFFCODE.wavAmp] = (val == -1) ? DEFAULT_WAVE_AMP : val;
+				if (secondArg[1] != "") {
+					val = real(secondArg[1]);
+					if (val == -1) val = DEFAULT_WAVE_FREQ;
+					map[? EFFCODE.wavFreq] = val;
+				}
+			}
+			return; 
+		case CMD_TWITCH: 
+			map[? EFFCODE.twitch] = true; 
+			if (s[1] != "") {
+				var secondArg = string_split(s[1], ":");
+				var val = real(secondArg[0]);
+				map[? EFFCODE.twitchFreq] = (val == -1) ? DEFAULT_TWITCH_FREQ : val;
+			}
+			return;
+	#endregion
+	
+	#region parse clearing of effects
+		case CMD_CLEAR_EFFECTS:
+			map[? EFFCODE.wave] = false;
+			map[? EFFCODE.shake] = false;
+			map[? EFFCODE.twitch] = false;
+			map[? EFFCODE.wavAmp] = DEFAULT_WAVE_AMP;
+			map[? EFFCODE.wavFreq] = DEFAULT_WAVE_FREQ;
+			map[? EFFCODE.twitchFreq] = DEFAULT_TWITCH_FREQ;
+			map[? EFFCODE.shakeAmp] = DEFAULT_SHAKE_AMP;
+			return; 
+		case CMD_CLEAR_WAVE:
+			map[? EFFCODE.wave] = false;
+			map[? EFFCODE.wavAmp] = DEFAULT_WAVE_AMP;
+			map[? EFFCODE.wavFreq] = DEFAULT_WAVE_FREQ;
+			return;
+		case CMD_CLEAR_TWITCH:
+			map[? EFFCODE.twitch] = false;
+			map[? EFFCODE.twitchFreq] = DEFAULT_TWITCH_FREQ;
+			return;
+		case CMD_CLEAR_SHAKE:
+			map[? EFFCODE.shake] = false;
+			map[? EFFCODE.shakeAmp] = DEFAULT_SHAKE_AMP;
+			return;
+	#endregion
+
+	}
+
+	throw_parser_error("unrecognized command = "+string(s)); 
+
+}
+
+///@function parse_pauses
+///@param effmap
+///@param index_in_map
+///@description Pauses are a little tricky because they only fire once. Hence they get
+/// special treatment. This script activates a pause at index i in the effect map
+/// then removes it so it never fires again.
+function parse_pauses(effmap, i) { 
+	if (ds_map_exists(effmap, i)) {
+		var val = effmap[? i];
+		if (!is_real(val)) {
+			var cmd = string_split(val, ":");
+			if (cmd[0] == CMD_PAUSE) { // SET PAUSE
+				var duration = cmd[1] == "" ? DEFAULT_PAUSE_DURATION : real(cmd[1]);
+				effmap[? EFFCODE.paused] = true;
+				effmap[? EFFCODE.pauseDuration] = duration;
+				effmap[? EFFCODE.pauseCounter] = 0;
+				ds_map_delete(effmap, i);
+			}
+		} else if (ds_exists(val, ds_type_list)) { // we've encountered a command list; check it for pauses
+			var nestedpauses = ds_list_create();
+			// check for pause commands
+			for (var j = 0; j < ds_list_size(val); j++) {
+				var cmd = string_split(val[| j], ":");
+				if (cmd[0] == CMD_PAUSE) ds_list_add(nestedpauses, j);
+			}
+			// concatenate pauses
+			if (ds_list_size(nestedpauses) > 0) { //nested pauses
+				var totalDuration = 0;
+				ds_list_sort(nestedpauses, false); // descending order (so we can delete without changing earlier indices)
+				for (var k = 0; k < ds_list_size(nestedpauses); k++) {
+					var valIdx = nestedpauses[| k];
+					var cmd = string_split(val[| valIdx], ":");
+					totalDuration += (cmd[1] == "" || real(cmd[1]) == -1) ? DEFAULT_PAUSE_DURATION : real(cmd[1]);			
+					ds_list_delete(val, valIdx);
+				}
+
+				// SET PAUSE
+				effmap[? EFFCODE.paused] = true;
+				effmap[? EFFCODE.pauseDuration] = totalDuration;
+				effmap[? EFFCODE.pauseCounter] = 0;
+			}
+			ds_list_destroy(nestedpauses);
+			if (ds_list_size(val)==0) {      // list empty; clear this key from map
+				ds_list_destroy(val);
+				ds_map_delete(effmap, i);
+			}
+		}
+	}
+}
+
+///@function parse_eff_lines
+///@param string
+///@param width
+///@param eff_map
+///@returns ds_list
+///@description translates an effmap into lines fitting inside a given width, taking into account <br> tags for manual linebreaks, and font changes which might change the width of lines. 
+///@return  ds_list of lines.
+function parse_eff_lines(text, width, map) {
+	var list = ds_list_create();
+	
+	// INTERNAL HELPER FUNCTION:
+	/// checks a particular index of the map,
+	/// parses newlines and fonts AT THAT INDEX, and returns number of newlines. 
+	var function parse_newlines_and_fonts(map, idx) {
+		var newlines = 0;
+
+		if (ds_map_exists(map, idx)) {
+			var val = map[? idx];
+			if (is_real(val) && ds_exists(val, ds_type_list)) {
+				for (var j = 0; j < ds_list_size(val); j++) {
+					if (val[| j] == CMD_NEWLINE) {
+						newlines ++;
+					} else if (val[| j] == CMD_CHANGE_FONT || val[| j] == CMD_CLEAR_FONT) {
+						parse_command(map, val[| j]);
+					}
+				}
+			} else {
+				if (val == CMD_NEWLINE) newlines ++;
+				else if (val == CMD_CHANGE_FONT || val == CMD_CLEAR_FONT) parse_command(map, val);
+			}
+		}
+		return newlines;
+	}
+
+	// parse lines
+	var lastspace, line = "", hasSpace = false, newline = 0;
+	for (var i = 1; i <= string_length(text); i++) {
+		var c = string_char_at(text, i);
+		if (c == " ") {
+			lastspace = i;   // record position of last space
+			hasSpace = true; // (flag this line has a space in it)
+		}
+
+		// check for newlines/font change
+		newline = parse_newlines_and_fonts(map, i);
+	
+		if (!newline) line += c;
+
+		if ((newline > 0) || (string_width(line) > width)) {
+			if (newline > 0) {                     // user-input line break
+				ds_list_add(list, line);
+				repeat (newline - 1) ds_list_add(list, "");
+				newline = 0;
+				line = c;
+			}
+			else if (!hasSpace) {
+				while (i < string_length(text)) {   // no space on this line - break at end of word
+					c = string_char_at(text, ++i);
+					newline = parse_newlines_and_fonts(map, i);
+					if (newline > 0) {
+						ds_list_add(list, line);
+						repeat (newline - 1) ds_list_add(list, "");
+						newline = 0;
+						line = c;
+					} else 
+						line += c;
+					if (c== " ") break;
+				}
+				ds_list_add(list, line);
+				line = "";
+			} else {                                // break at last space
+				ds_list_add(list, string_copy(line, 1, string_length(line) - i + lastspace));
+				i = lastspace; 
+				hasSpace = false;
+				line = "";
+			}
+		}
+	
+		if (i == string_length(text) && line != "") // add final line if not empty
+			ds_list_add(list, line);
+	}
+	return list; 
+}
+	
+/// ------------------------------------------------------------
+/// The Following Are Less Important Parsing Functions
+/// ------------------------------------------------------------
+
+///@function parse_colour
+///@param string
+///@description parses a string as a hex colour in bb/gg/rr format.
+function parse_colour(s) {
+	// nb your custom hex colours must be in BB/GG/RR format 
+	// because GameMaker stores colours as little endian.
+	switch(s) {
+		case "black": return 0; break;
+		case "white": return c_white; break;
+		case "red": return c_red; break;
+		case "green": return c_green; break;
+		case "blue": return c_blue; break;
+		case "yellow": return c_yellow; break;
+		case "orange": return c_orange; break;
+		case "magenta": return c_fuchsia; break;
+		case "fuchsia": return c_fuchsia; break;
+		case "purple": return c_purple; break;
+		case "aqua": return c_aqua; break;
+		case "cyan": return c_aqua; break;
+		case "olive": return c_olive; break;
+		case "ltgray": return c_ltgray; break;
+		case "dkgray": return c_dkgray; break;
+		case "gray": return c_gray; break;
+		case "silver": return c_silver; break;
+		case "maroon": return c_maroon; break;
+		case "lime": return c_lime; break;
+		case "navy": return c_navy; break;
+		case "teal": return c_teal; break;
+	}
+
+	var h = string_to_hex(s);
+	show_debug_message("h: "+string(h));
+	if (h <= 16777215) return h;
+
+	throw_parser_error(s + " is not a valid colour.");
+}
+
+///@function remove_pauses
+///@param effmap
+///@description Removes all PAUSE commands from the effect map (used when skipping the text). 
+function remove_pauses(effmap) {
+	for (var i = 1; i < string_length(effmap[? 0]); i++) {
+		if (ds_map_exists(effmap, i)) {
+			var val = effmap[? i];
+			if (!is_real(val)) {
+				var cmd = string_split(val, ":");
+				if (cmd[0] == CMD_PAUSE) { // SET PAUSE
+					ds_map_delete(effmap, i);
+				}
+			} else if (ds_exists(val, ds_type_list)) { // we've encountered a command list; check it for pauses
+				var nestedpauses = ds_list_create();
+				// check for pause commands
+				for (var j = 0; j < ds_list_size(val); j++) {
+					var cmd = string_split(val[| j], ":");
+					if (cmd[0] == CMD_PAUSE) ds_list_add(nestedpauses, j);
+				}
+				// concatenate pauses
+				if (ds_list_size(nestedpauses) > 0) { //nested pauses
+					ds_list_sort(nestedpauses, false); // descending order (so we can delete without changing earlier indices)
+					for (var k = 0; k < ds_list_size(nestedpauses); k++) {
+						var valIdx = nestedpauses[| k];
+						var cmd = string_split(val[| valIdx], ":");		
+						ds_list_delete(val, valIdx);
+					}
+				}
+				ds_list_destroy(nestedpauses);
+				if (ds_list_size(val)==0) {      // list empty; clear this key from map
+					ds_list_destroy(val);
+					ds_map_delete(effmap, i);
+				}
+			}
+		}
+	}
+}
+
+///@function throw_parser_error
+///@param string
+function throw_parser_error(str) {
+	show_error("Parser error: "+str, true);
+}
