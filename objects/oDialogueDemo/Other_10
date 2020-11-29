@@ -1,0 +1,94 @@
+/// @description make tree
+// user event 0
+// This event can be called to create a certain tree by setting the tree variable to a JSON string.
+
+tree = json_decode(@'
+{
+	"start" : {
+		"messages" : [
+			"<i:alice><c:1057ff>This is a <f:fItalic>dem<p>o</f> of the<p> dialogue<p> system.",
+			"<i:alice><sx:aChatAlt>There are <e:angry>severa<p>l<e:def> <w>effects</w> you can apply to the text.",
+			"<i:alice><e:angry>All applied with a <s>nifty parser</s> that is..<p>. extremel<p>y easy to use." 
+		],
+        "choices" : [
+			"That`s <f:fComicSans>cool</f>!",
+			"That`s <f:fItalic>lame</f>!",
+			"[leave]"
+		],
+		"goto" : [
+			"thatscool", 
+			"areYouSure",
+			"theRestIsSilence"
+		]
+	},
+	
+	"areYouSure" : {
+		 "choices" : [
+			"<t>It`s really lame.",
+			"<t:3>...",
+			"<w>It actually OK ^_^"
+		],
+		"goto" : [
+			"thatslame",
+			"thatslame",
+			"thatscool"
+		]
+	},
+ 
+	"thatscool" : {
+        "messages" : [
+			"<i:bob>Thank you! I`m glad you like it.", 
+			"Everything about this system can be customized.",
+			"There are three major building blocks: <c:red>oPrinter</c>, <c:orange>oTextbox</c>, and <c:green>oChoicebox</c>.",
+			"These objects can be combined with the two scripts <c:fuchsia>draw_text_eff</c> and <c:fuchsia>draw_text_eff_ext</c> to create <w:2>anything</w> you need dialogue-wise."
+		],
+		"choices" : [
+			"But why?",
+			"[leave]"
+		],
+		"goto" : [
+			"butwhy",
+			"theRestIsSilence"
+		]
+	},
+	
+	"thatslame" : {
+        "messages" : [
+			"<s:2>What?!</s> <br>So<p>. You think my system is lame, do you?"
+		],
+        "choices" : [
+			"yes, definitely lame", 
+			"no, it is actually very cool x"
+		],
+		"goto" : [
+			"verylame", 
+			"thatscool"
+		]
+    },
+	
+	"verylame" : {
+        "messages" : [
+			"</sx></skip><f:fChiller><c:red>. . . . . . . <auto>. . . . . . . . . . . . . . . . .<p> ", 
+			"</sx></skip><f:fChiller><c:red>You should be careful what you say to people.", 
+			"</sx></skip><f:fChiller><c:red>One day, you might find yourself in a place beyond hope<p>. <br>A place of total isolation and despair.",
+			"</sx></skip><f:fChiller><c:red>Crawling on your belly in the void, your hands stretch out...",
+			"</sx></skip><f:fChiller><c:red>And find two boots...",
+			"</sx></skip><f:fChiller><c:red>And you`ll whisper: <q>please<p>.<p>.<p>. <br>help me<q>.",
+			"</sx></skip><f:fChiller><c:red>...",
+			"</sx></skip><f:fChiller><c:red>And I`ll look back, and whisper<p>: <br><br><br><f:fComicSans><sx:aChatAlt><c:ff6666><q><w>ur mum gey</w>.<q>"
+		]
+    },
+	
+    "butwhy" : {
+        "messages" : [
+			"Well, I`m glad you asked!", 
+			"There`s a real dearth of good dialogue writers in GMstudio.",
+			"It`s nice to have a good text parser display sexy text without having to endure the ordeal of coding it every time.",
+			"Anyway, that concludes the tutorial.",
+			"Go forth and conquer.",
+			"<w:5><br>Excelsoir!"
+		]
+    },
+
+	"theRestIsSilence" : {}
+}');
