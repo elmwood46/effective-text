@@ -1,0 +1,44 @@
+/// @description 
+/*
+  This object combines textboxes and choiceboxes to 
+  allow the user to navigate a dialogue tree. 
+  The tree itself is a JSON encoded string defining
+  several maps. Each map has the lists "messages",
+  "choices" and "goto".
+  
+  THE FIRST MAP in the JSON string MUST ALWAYS BE CALLED "start"
+  
+  "messages" is a bunch of messages which will be shown
+  before the choices. 
+  "choices" defines the text for each choice (in order).
+  "goto" defines the message blocks that each
+  choice leads to (in same order as the choicelist).
+  
+  When the dialogue tree reaches the end of a block without any
+  choices or messages, it destroys itself and cleans up all datastructures.
+  
+  NB it requires the "tree" variable to be set externally. 
+*/
+
+// define textbox position & vars
+bgcolour = c_white;                                   // background colour
+bordercolour = c_black;                               // border colour
+padding = 4;                                          // spacing between objects
+font = fSmall;                                        // default font
+textcolour = bordercolour;                            // default colour
+textsound = -1;
+width = 200;                                          // total box with
+height = font_get_height(font) * 3 + 25;              // total box height 
+
+tbx = display_get_gui_width()/2 - width/2;            // textbox x
+tby = display_get_gui_height() - height - padding;    // textbox y
+
+state = "start";
+tree = -1;
+
+function start_dialogue() {event_user(0);}
+function is_finished() {return state == -1;}
+function set_text_sound(sound) {textsound = sound;}
+function set_bg_colour(col) {bgcolour = col;}
+function set_border_colour(col) {bordercolour = col;}
+function set_text_colour(col) {textcolour = col;}
