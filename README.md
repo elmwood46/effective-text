@@ -17,7 +17,7 @@ The message is automatically linebroken into an arbitrary box and
 can be placed anywhere.
 The message is printed character by character, typewriter-style.
 Furthermore, multiple lines don't run outside the box - instead, the text scrolls upwards.
-Pauses only work with the oPrinter object (although pause tags included elsewhere are simply ignored.)
+Pauses only work with the oPrinter object (pause tags included elsewhere are ignored by the parser.)
 
 Add effects by including EFFECT TAGS inside your string literals.
 
